@@ -15,7 +15,7 @@ module.exports = function(grunt) {
         packages: [
           {
             name: "fmf",
-            location: "src"
+            location: "src/fmf"
           }
         ]
       },
@@ -50,7 +50,25 @@ module.exports = function(grunt) {
 
     clean: {
       dist: ["dist/*"]
+    },
+
+    jade: {
+      assets: {
+        options: {
+          client: false,
+          pretty: true,
+          namespace: false,
+        },
+        files: [{
+          cwd: "src/assets",
+          src: "**/*.jade",
+          dest: "dist/build",
+          expand: true,
+          ext: ".html"
+        }]
+      }
     }
+
   });
 
   grunt.loadNpmTasks("grunt-requirejs");
@@ -58,10 +76,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-contrib-connect");
   grunt.loadNpmTasks("grunt-contrib-watch");
+  grunt.loadNpmTasks("grunt-contrib-jade");
   grunt.loadNpmTasks("grunt-open");
 
-  grunt.registerTask("build", ["jshint", "requirejs:build"]);
-  grunt.registerTask("dev", ["jshint", "requirejs:dev"]);
+
+  grunt.registerTask("common", ["jshint", "jade"]);
+  grunt.registerTask("build", ["common", "requirejs:build"]);
+  grunt.registerTask("dev", ["common", "requirejs:dev"]);
 
   grunt.registerTask("default", ["dev"]);
 };
