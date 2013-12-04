@@ -11,6 +11,7 @@ requirejs.config({
     jquery: 'bower_components/jquery/jquery',
     knockout: 'bower_components/knockout.js/knockout',
     'requirejs-text': 'bower_components/requirejs-text/text',
-    requirejs: 'bower_components/requirejs/require'
+    requirejs: 'bower_components/requirejs/require',
+    bootstrap: 'bower_components/bootstrap/dist/js/bootstrap'
   }
 });

@@ -2,7 +2,16 @@ module.exports = function(grunt) {
   "use strict";
 
   var REQUIREJS_CONFIG_PATH = "requirejs.config.js",
-    OUTPUT_DIRECTORY = "out";
+    OUTPUT_DIR = "out",
+    TEMP_DIR = "temp",
+    LIVERELOAD_PORT = 35729,
+    liveReload = require('connect-livereload')({
+      port: LIVERELOAD_PORT
+    }),
+    addFolder = function(connect, dir) {
+      var path = require("path");
+      return connect.static(path.resolve(dir));
+    };
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -11,7 +20,7 @@ module.exports = function(grunt) {
       options: {
         mainConfigFile: REQUIREJS_CONFIG_PATH,
         convert: true,
-        out: [OUTPUT_DIRECTORY, "fmf.js"].join("/"),
+        out: [OUTPUT_DIR, "js", "fmf.js"].join("/"),
         cjsTranslate: true,
         include: "fmf",
         generateSourceMaps: true,
@@ -53,9 +62,9 @@ module.exports = function(grunt) {
     },
 
     clean: {
-      out: [
-        OUTPUT_DIRECTORY + "/*"
-      ]
+      out: [ OUTPUT_DIR, TEMP_DIR ].map(function(dir) {
+        return dir + "/*";
+      })
     },
 
     jade: {
@@ -68,7 +77,7 @@ module.exports = function(grunt) {
         files: [{
           cwd: "src/html",
           src: "**/*.jade",
-          dest: OUTPUT_DIRECTORY,
+          dest: OUTPUT_DIR,
           expand: true,
           ext: ".html"
         }]
@@ -87,7 +96,9 @@ module.exports = function(grunt) {
         options: {
           port: 10112,
           hostname: 'localhost',
-          base: 'out'
+          middleware: function(connect) {
+            return [liveReload, addFolder(connect, "./out")];
+          }
         }
       },
     },
@@ -123,26 +134,64 @@ module.exports = function(grunt) {
           "package.json",
           "requirejs.config.js"
         ],
-        tasks: [ "pre-dev" ]
+        tasks: [ "pre-dev" ],
+        options: {
+          livereload: LIVERELOAD_PORT
+        }
       },
+    },
+
+    less: {
+      build: {
+        files: [{
+          cwd: "src/css",
+          src: "**/*.less",
+          dest: [OUTPUT_DIR, "css"].join("/"),
+          expand: true,
+          ext: ".css"
+        }],
+        options: {
+          report: 'gzip',
+          compress: true,
+          cleancss: true,
+          ieCompat: false
+        }
+      },
+      dev: {
+        files: [{
+          cwd: "src/css",
+          src: "**/*.less",
+          dest: [OUTPUT_DIR, "css"].join("/"),
+          expand: true,
+          ext: ".css"
+        }],
+        options: {
+          report: 'gzip',
+          compress: false,
+          cleancss: false,
+          ieCompat: false
+        }
+      }
     }
   });
 
   grunt.loadNpmTasks("grunt-requirejs");
   grunt.loadNpmTasks("grunt-contrib-jshint");
   grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-connect");
   grunt.loadNpmTasks("grunt-contrib-watch");
   grunt.loadNpmTasks("grunt-contrib-jade");
+  grunt.loadNpmTasks("grunt-contrib-less");
   grunt.loadNpmTasks("grunt-open");
   grunt.loadNpmTasks('grunt-bower-requirejs');
 
   grunt.registerTask("common", ["jshint", "jade", "bower"]);
 
-  grunt.registerTask("pre-build", ["common", "requirejs:build"]);
-  grunt.registerTask("build", ["pre-build", "open:build", "watch:build"]);
+  grunt.registerTask("pre-build", ["common", "requirejs:build", "less:build"]);
+  grunt.registerTask("build", ["pre-build", "connect:build", "open:build", "watch:build"]);
 
-  grunt.registerTask("pre-dev", ["common", "requirejs:dev"]);
+  grunt.registerTask("pre-dev", ["common", "requirejs:dev", "less:dev"]);
   grunt.registerTask("dev", ["pre-dev", "connect:dev", "open:dev", "watch:dev"]);
 
   grunt.registerTask("default", ["dev"]);
