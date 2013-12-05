@@ -12,6 +12,7 @@ logs
 results
 dist
 temp
+out
 
 npm-debug.log
 node_modules

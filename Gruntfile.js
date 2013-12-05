@@ -24,8 +24,10 @@ module.exports = function(grunt) {
         cjsTranslate: true,
         include: "fmf",
         generateSourceMaps: true,
-        preserveLicenseComments: false
+        preserveLicenseComments: false,
+        useStrict: true
       },
+
       build: {
         options: {
           optimize: "uglify2",
@@ -45,12 +47,6 @@ module.exports = function(grunt) {
         options: {
           optimize: "none",
         }
-      }
-    },
-
-    bower: {
-      all: {
-        rjsConfig: REQUIREJS_CONFIG_PATH
       }
     },
 
@@ -166,7 +162,6 @@ module.exports = function(grunt) {
           ext: ".css"
         }],
         options: {
-          report: 'gzip',
           compress: false,
           cleancss: false,
           ieCompat: false
@@ -184,9 +179,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-jade");
   grunt.loadNpmTasks("grunt-contrib-less");
   grunt.loadNpmTasks("grunt-open");
-  grunt.loadNpmTasks('grunt-bower-requirejs');
 
-  grunt.registerTask("common", ["jshint", "jade", "bower"]);
+  grunt.registerTask("common", ["jshint", "jade"]);
 
   grunt.registerTask("pre-build", ["common", "requirejs:build", "less:build"]);
   grunt.registerTask("build", ["pre-build", "connect:build", "open:build", "watch:build"]);
